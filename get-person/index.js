@@ -1,26 +1,30 @@
 const dynamoose = require('dynamoose');
 
+const peopleSchema = new dynamoose.Schema({
+  'id': Number,
+  'name': String,
+  'role': String,
+});
+
+const peopleTable = dynamoose.model('people', peopleSchema);
+
 exports.handler = async (event) => {
 
-  const peopleSchema = new dynamoose.Schema({
-    'id': Number,
-    'name': String,
-    'role': String,
-  });
-
-  const peopleTable = dynamoose.model('people', peopleSchema);
+  let id = event.pathParameters && event.pathParameters.id;
+  let idNum = parseInt(id);
 
   let data = null;
   let status = 500;
 
   try {
-    let id = Number(event.pathParameters.id);
-    data = await peopleTable.query('id').eq(id).exec();
+    const person = await peopleTable.query('id').eq(idNum).exec();
+    data = person;
     status = 200;
 
   } catch (e) {
-    data = new Error(e);
+    console.log(e);
     status = 400;
+    data = new Error(e);
   }
 
   const response = {
